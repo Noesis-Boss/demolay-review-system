@@ -105,7 +105,7 @@ export default function Results() {
     return averaged.sort((a, b) => a.memberName.localeCompare(b.memberName));
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full" /></div>;
 
   const userEmail = auth?.email?.toLowerCase() || "";
   const isDad = DAD_EMAILS.includes(userEmail);

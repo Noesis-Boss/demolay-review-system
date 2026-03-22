@@ -50,10 +50,7 @@ export default function Landing() {
       try {
         const res = await fetch(`/api/reviews/submit?memberId=${member.id}`, { headers: { "X-Review-Token": token } });
         const data = await res.json();
-        // API returns 'reviewed' not 'alreadyReviewed'
-        if (data.reviewed) {
-          reviewed.push(member.id);
-        }
+        if (data.reviewed) reviewed.push(member.id);
       } catch {}
     }
     setReviewedMembers(reviewed);
@@ -61,14 +58,14 @@ export default function Landing() {
 
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(180deg, #e6f0ff 0%, #cce5ff 50%, #b3d9ff 100%)" }}><div className="animate-spin w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full" /></div>;
 
   const userEmail = auth?.email?.toLowerCase() || "";
   const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
   const remainingCount = members.length - reviewedMembers.length - (selfMember ? 1 : 0);
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #e6f0ff 0%, #cce5ff 50%, #b3d9ff 100%)" }}>
       <div style={{ background: `linear-gradient(135deg, ${AZ_BLUE}, ${AZ_RED})` }} className="py-6">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-center text-white">Arizona DeMolay 360° Review</h1>
