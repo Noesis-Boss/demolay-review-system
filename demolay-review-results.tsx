@@ -20,6 +20,7 @@ const members = [
 ];
 
 const DAD_EMAILS = ["state.officer.director@azdemolay.org", "state.dad@azdemolay.org", "membership.advisor@azdemolay.org"];
+const YOUTH_EMAILS = ["smc@azdemolay.org", "dsmc@azdemolay.org", "ssc@azdemolay.org", "sjc@azdemolay.org", "scribe@azdemolay.org"];
 
 const getMemberInfo = (memberId: string) => {
   const member = members.find(m => m.id === memberId);
@@ -30,7 +31,6 @@ export default function Results() {
   const [auth, setAuth] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewAsSMC, setViewAsSMC] = useState(false);
 
   useEffect(() => { checkAuth(); }, []);
 
@@ -79,7 +79,7 @@ export default function Results() {
         r.comments
       ];
     });
-    const csv = [headers.join(","), ...rows.map(r => r.map((c: any) => `"${c}"`).join(","))].join("\n");
+    const csv = [headers.join(","), ...rows.map(r => r.map((c: any) => `"${c}"`).join(",")).join("\n")].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -90,10 +90,17 @@ export default function Results() {
   const getDisplayReviews = () => {
     const userEmail = (auth?.email || "").toLowerCase();
     const isDad = DAD_EMAILS.includes(userEmail);
-    if (isDad && !viewAsSMC) {
-      return reviews.filter(r => r.reviewerEmail && DAD_EMAILS.includes(r.reviewerEmail.toLowerCase()));
+    const isYouth = YOUTH_EMAILS.includes(userEmail);
+    const selfMember = members.find(m => (m.email || "").toLowerCase() === userEmail);
+    
+    if (isDad) {
+      // Dad accounts see ALL reviews
+      return reviews;
+    } else if (isYouth && selfMember) {
+      // Youth members only see reviews ABOUT themselves
+      return reviews.filter(r => r.memberId === selfMember.id);
     }
-    return reviews;
+    return [];
   };
 
   const getAveragesByMember = () => {
@@ -121,6 +128,8 @@ export default function Results() {
 
   const userEmail = (auth?.email || "").toLowerCase();
   const isDad = DAD_EMAILS.includes(userEmail);
+  const isYouth = YOUTH_EMAILS.includes(userEmail);
+  const selfMember = members.find(m => (m.email || "").toLowerCase() === userEmail);
   const averages = getAveragesByMember();
 
   return (
@@ -138,12 +147,6 @@ export default function Results() {
             <div><p className="font-semibold text-lg" style={{ color: AZ_BLUE }}>{auth.name}</p><p className="text-sm" style={{ color: AZ_COPPER }}>{auth.email}</p></div>
           </div>
           <div className="flex gap-3 items-center flex-wrap">
-            {isDad && (
-              <label className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: "white", border: `2px solid ${AZ_BLUE}` }}>
-                <input type="checkbox" checked={viewAsSMC} onChange={e => setViewAsSMC(e.target.checked)} className="w-4 h-4" />
-                <span style={{ color: AZ_BLUE }}>View as SMC</span>
-              </label>
-            )}
             {isDad && <button onClick={exportCSV} className="px-4 py-2 rounded-lg font-semibold text-white flex items-center gap-2" style={{ background: AZ_BLUE }}><FileDown className="w-4 h-4" />Export CSV</button>}
             <button onClick={handleLogout} className="px-4 py-2 rounded-lg font-semibold text-white" style={{ background: AZ_RED }}>Logout</button>
           </div>
@@ -156,7 +159,7 @@ export default function Results() {
         ) : (
           <>
             <h2 className="text-xl font-semibold mb-4" style={{ color: AZ_BLUE }}>
-              {isDad && !viewAsSMC ? "Average Ratings by Member (Dad Accounts Only)" : "Average Ratings by Member (All Reviews)"}
+              {isDad ? "Average Ratings by Member (All Reviews)" : isYouth ? `Reviews for ${selfMember?.name || "You"}` : "Average Ratings by Member"}
             </h2>
             <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
               <div className="overflow-x-auto">
