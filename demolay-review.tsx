@@ -88,7 +88,7 @@ export default function Landing() {
           <div className="mb-8 p-6 rounded-xl text-center bg-green-100 border-2 border-green-500">
             <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-green-600" />
             <p className="text-xl font-bold mb-2" style={{ color: AZ_BLUE }}>All Reviews Complete!</p>
-            <Link to="/demolay-review/results" className="inline-block px-6 py-3 rounded-lg font-semibold text-white bg-blue-800">View Results</Link>
+            <Link to="/demolay-review/results" className="inline-block px-6 py-3 rounded-lg font-semibold text-white bg-blue-900">View Results</Link>
           </div>
         ) : (
           <p className="text-center mb-6 text-lg" style={{ color: AZ_BLUE }}><span className="font-bold">{remainingCount}</span> member{remainingCount !== 1 ? "s" : ""} remaining</p>
@@ -125,7 +125,7 @@ export default function Landing() {
             );
 
             return (
-              <Link key={member.id} to={`/review/${member.id}`} className="rounded-xl p-4 bg-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
+              <Link key={member.id} to={`/review?member=${member.id}`} className="rounded-xl p-4 bg-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold bg-yellow-400 text-blue-900">{member.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</div>
                   <span className="px-2 py-1 rounded text-xs font-semibold bg-yellow-400 text-blue-900">PENDING</span>

@@ -89,15 +89,15 @@ export default function Results() {
             <tbody>
               {displayReviews.map((r, i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                  <td className="px-4 py-3 font-semibold text-blue-900">{members.find(m => m.id === r.memberId)?.name || r.memberId}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.leadership}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.teamwork}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.attendance}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.punctuality}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.motivation}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.ritualWork}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.initiative}</td>
-                  <td className="px-4 py-3 text-center">{r.ratings.planning}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-900">{members.find(m => m.id === r.memberId)?.name || r.memberId}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.leadership}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.teamwork}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.attendance}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.punctuality}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.motivation}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.ritualWork}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.initiative}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.planning}</td>
                 </tr>
               ))}
             </tbody>

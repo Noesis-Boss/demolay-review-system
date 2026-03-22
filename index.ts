@@ -20,6 +20,7 @@ export const apiRouteManifest: Record<string, ApiRouteManifest> = {
   "/aaronlodge49/*": { file: "aaronlodge49-*", public: true },
   "/api/auth/callback": { file: "api-auth-callback", public: true },
   "/api/auth/debug": { file: "api-auth-debug", public: true },
+  "/api/reviews/check-all": { file: "api-reviews-check-all", public: true },
   "/api/auth/google": { file: "api-auth-google", public: true },
   "/api/auth/me": { file: "api-auth-me", public: true },
   "/api/reviews/submit": { file: "api-reviews-submit", public: true },
