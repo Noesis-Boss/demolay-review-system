@@ -9,8 +9,8 @@ const AZ_COPPER = "#C47A6B";
 const LIGHT_BLUE_BG = "linear-gradient(180deg, #e6f0ff 0%, #cce5ff 50%, #b3d9ff 100%)";
 
 const members = [
-  { id: "steve-johnston", name: "Dad Steve Johnston", title: "Executive Officer", email: "state.officer.director@azdemolay.org" },
-  { id: "don-lowery", name: "Dad Don Lowery", title: "State Dad", email: "state.dad@azdemolay.org" },
+  { id: "steve-johnston", name: "Dad Steve Johnston", title: "Executive Officer", email: "executive.officer@azdemolay.org" },
+  { id: "don-lowery", name: "Dad Don Lowery", title: "State Dad", email: "state.officer.director@azdemolay.org" },
   { id: "bill-enloe", name: "Dad Bill Enloe", title: "State Membership Advisor", email: "membership.advisor@azdemolay.org" },
   { id: "seth-baldwin", name: "SMC Seth Baldwin", title: "State Master Councilor", email: "smc@azdemolay.org" },
   { id: "kaden-hartley", name: "DSMC Kaden Hartley", title: "Deputy State Master Councilor", email: "dsmc@azdemolay.org" },
