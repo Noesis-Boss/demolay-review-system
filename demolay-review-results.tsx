@@ -137,7 +137,7 @@ export default function Results() {
         {/* Legend */}
         <div className="mb-4 flex gap-4 text-sm">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500"></span> ≥4.0 Excellent</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-500"></span> ≥3.0 Good</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-500"></span> ≥3.0 Adequate</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> &lt;3.0 Needs Improvement</span>
         </div>
 
