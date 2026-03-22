@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, ArrowLeft, CheckCircle, Lock } from "lucide-react";
+import { Star, ArrowLeft, CheckCircle, Lock, Eye } from "lucide-react";
 
 const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
@@ -38,6 +38,8 @@ export default function ReviewForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSelf, setIsSelf] = useState(false);
+  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const [reviewData, setReviewData] = useState(null);
 
   const member = members.find(m => m.id === memberId);
 
@@ -53,10 +55,17 @@ export default function ReviewForm() {
         setAuth(data);
         const userEmail = data.email?.toLowerCase() || "";
         const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
-        if (selfMember && selfMember.id === memberId) setIsSelf(true);
-        const checkRes = await fetch(`/api/reviews/submit?memberId=${memberId}`, { headers: { "X-Review-Token": token } });
-        const checkData = await checkRes.json();
-        if (checkData.alreadyReviewed) setSubmitted(true);
+        if (selfMember && selfMember.id === memberId) {
+          setIsSelf(true);
+        } else {
+          // Check if already reviewed
+          const checkRes = await fetch(`/api/reviews/submit?memberId=${memberId}`, { headers: { "X-Review-Token": token } });
+          const checkData = await checkRes.json();
+          if (checkData.alreadyReviewed) {
+            setAlreadyReviewed(true);
+            setReviewData(checkData.review);
+          }
+        }
       } else {
         localStorage.removeItem("reviewToken");
         window.location.href = "/api/auth/google";
@@ -68,9 +77,13 @@ export default function ReviewForm() {
     setLoading(false);
   };
 
-  const handleRating = (attribute, value) => setRatings(prev => ({ ...prev, [attribute]: value }));
+  const handleRating = (attribute, value) => {
+    if (alreadyReviewed || isSelf) return; // Prevent changes if already reviewed or self
+    setRatings(prev => ({ ...prev, [attribute]: value }));
+  };
 
   const handleSubmit = async () => {
+    if (alreadyReviewed || isSelf) { alert("You cannot submit or modify this review."); return; }
     if (Object.keys(ratings).length < attributes.length) { alert("Please rate all attributes"); return; }
     setSubmitting(true);
     const token = localStorage.getItem("reviewToken");
@@ -81,6 +94,7 @@ export default function ReviewForm() {
         body: JSON.stringify({ memberId, ratings, comments }),
       });
       if (res.ok) setSubmitted(true);
+      else if (res.status === 409) { alert("You have already reviewed this member."); setAlreadyReviewed(true); }
       else alert("Failed to submit");
     } catch { alert("Network error"); }
     setSubmitting(false);
@@ -104,11 +118,35 @@ export default function ReviewForm() {
           <h2 className="text-2xl font-bold mb-2" style={{ color: AZ_BLUE }}>{member?.name}</h2>
           <p className="text-lg mb-4" style={{ color: "#B87333" }}>{member?.title}</p>
         </div>
+
         {isSelf ? (
           <div className="bg-red-100 border-l-4 border-red-500 p-6 rounded-xl">
             <div className="flex items-center gap-3 mb-4"><Lock className="w-8 h-8 text-red-500" /><h3 className="text-xl font-bold text-red-700">Self-Review Disabled</h3></div>
-            <p className="text-red-600 mb-6">You cannot review yourself. Please select another member to review.</p>
+            <p className="text-red-600 mb-6">You cannot review yourself.</p>
             <Link to="/demolay-review" className="inline-block px-6 py-3 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
+          </div>
+        ) : alreadyReviewed ? (
+          <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-xl">
+            <div className="flex items-center gap-3 mb-4"><CheckCircle className="w-8 h-8 text-green-500" /><h3 className="text-xl font-bold text-green-700">Already Reviewed</h3></div>
+            <p className="text-green-600 mb-4">You have already submitted a review for {member?.name}.</p>
+            {reviewData && (
+              <div className="bg-white rounded-lg p-4 mb-4">
+                <h4 className="font-semibold mb-2">Your Previous Review:</h4>
+                <div className="grid grid-cols-4 gap-2 text-sm">
+                  {attributes.map(attr => (
+                    <div key={attr.key} className="bg-gray-100 p-2 rounded text-center">
+                      <span className="block text-xs text-gray-500">{attr.label}</span>
+                      <span className="font-bold text-lg" style={{ color: AZ_BLUE }}>{reviewData.ratings?.[attr.key] || "-"}</span>
+                    </div>
+                  ))}
+                </div>
+                {reviewData.comments && <p className="mt-3 text-sm text-gray-600 italic">"{reviewData.comments}"</p>}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Link to="/demolay-review" className="px-6 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
+              <Link to="/demolay-review/results" className="px-6 py-2 rounded-lg text-white font-semibold flex items-center gap-2" style={{ background: "#16a34a" }}><Eye className="w-4 h-4" />View Results</Link>
+            </div>
           </div>
         ) : submitted ? (
           <div className="bg-white rounded-xl p-8 text-center shadow-lg">
