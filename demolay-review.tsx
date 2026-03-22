@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Star, Lock, CheckCircle2, Eye } from "lucide-react";
+import { Star, Lock, CheckCircle2, Eye, Ban } from "lucide-react";
 
 const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
@@ -14,7 +14,7 @@ const members = [
   { id: "kaden-hartley", name: "DSMC Kaden Hartley", title: "Deputy State Master Councilor", email: "dsmc@azdemolay.org" },
   { id: "cooper-pitman", name: "SSC Cooper Pitman", title: "State Senior Councilor", email: "ssc@azdemolay.org" },
   { id: "john-enloe", name: "SJC John Enloe", title: "State Junior Councilor", email: "sjc@azdemolay.org" },
-  { id: "james-hendrickson", name: "Scribe James Hendrickson", title: "State Scribe", email: "scribe@azdemolay.org" },
+  { id: "james-hendrickson", name: "Scribe James Hendrickson", title: "State Scribe", email: "scribe@azdemolay.org", excused: true },
 ];
 
 export default function Landing() {
@@ -62,7 +62,8 @@ export default function Landing() {
 
   const userEmail = auth?.email?.toLowerCase() || "";
   const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
-  const remainingCount = members.length - reviewedMembers.length - (selfMember ? 1 : 0);
+  const excusedCount = members.filter(m => m.excused).length;
+  const remainingCount = members.length - reviewedMembers.length - (selfMember ? 1 : 0) - excusedCount;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#dbeafe" }}>
@@ -91,7 +92,7 @@ export default function Landing() {
             <Link to="/demolay-review/results" className="inline-block px-6 py-3 rounded-lg font-semibold text-white bg-blue-900">View Results</Link>
           </div>
         ) : (
-          <p className="text-center mb-6 text-lg" style={{ color: AZ_BLUE }}><span className="font-bold">{remainingCount}</span> member{remainingCount !== 1 ? "s" : ""} remaining</p>
+          <p className="text-center mb-6 text-lg" style={{ color: AZ_BLUE }}><span className="font-bold">{remainingCount}</span> member{remainingCount !== 1 ? "s" : ""} remaining to review</p>
         )}
 
         {selfMember && <div className="mb-6 p-4 rounded-lg bg-red-100 border-l-4 border-red-500"><p className="font-semibold text-red-700">Self-review disabled</p></div>}
@@ -100,6 +101,7 @@ export default function Landing() {
           {members.map((member) => {
             const isSelf = member.id === selfMember?.id;
             const isReviewed = reviewedMembers.includes(member.id);
+            const isExcused = member.excused;
 
             if (isSelf) return (
               <div key={member.id} className="rounded-xl p-4 bg-gray-200 border-2 border-dashed border-gray-400 opacity-70">
@@ -109,6 +111,18 @@ export default function Landing() {
                 </div>
                 <h3 className="font-semibold text-lg text-gray-600">{member.name}</h3>
                 <p className="text-sm text-gray-500">{member.title}</p>
+              </div>
+            );
+
+            if (isExcused) return (
+              <div key={member.id} className="rounded-xl p-4 bg-blue-50 border-2 border-blue-300 opacity-70">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-300"><Ban className="w-6 h-6 text-white" /></div>
+                  <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-300 text-white">EXCUSED</span>
+                </div>
+                <h3 className="font-semibold text-lg text-blue-900">{member.name}</h3>
+                <p className="text-sm text-gray-600">{member.title}</p>
+                <p className="text-xs text-blue-600 mt-2">Not participating in reviews</p>
               </div>
             );
 
