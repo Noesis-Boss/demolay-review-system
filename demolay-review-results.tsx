@@ -21,6 +21,11 @@ const members = [
 
 const DAD_EMAILS = ["state.officer.director@azdemolay.org", "state.dad@azdemolay.org", "membership.advisor@azdemolay.org"];
 
+const getMemberInfo = (memberId: string) => {
+  const member = members.find(m => m.id === memberId);
+  return member || { name: memberId, title: "" };
+};
+
 export default function Results() {
   const [auth, setAuth] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -63,20 +68,22 @@ export default function Results() {
   };
 
   const exportCSV = () => {
+    const displayReviews = getDisplayReviews();
     const headers = ["Member", "Title", "Reviewer", "Leadership", "Teamwork", "Attendance", "Punctuality", "Motivation", "Ritual Work", "Initiative", "Planning", "Comments"];
-    const rows = getDisplayReviews().map(r => [
-      r.memberName, r.memberTitle, r.reviewerName,
-      r.ratings.leadership, r.ratings.teamwork, r.ratings.attendance, r.ratings.punctuality,
-      r.ratings.motivation, r.ratings.ritualWork, r.ratings.initiative, r.ratings.planning,
-      r.comments
-    ]);
+    const rows = displayReviews.map(r => {
+      const info = getMemberInfo(r.memberId);
+      return [
+        info.name, info.title, r.reviewerEmail || "Unknown",
+        r.ratings.leadership, r.ratings.teamwork, r.ratings.attendance, r.ratings.punctuality,
+        r.ratings.motivation, r.ratings.ritualWork, r.ratings.initiative, r.ratings.planning,
+        r.comments
+      ];
+    });
     const csv = [headers.join(","), ...rows.map(r => r.map((c: any) => `"${c}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "demolay-reviews.csv";
-    a.click();
+    a.href = url; a.download = "demolay-reviews.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -90,10 +97,12 @@ export default function Results() {
   };
 
   const getAveragesByMember = () => {
+    const displayReviews = getDisplayReviews();
     const grouped: any = {};
-    getDisplayReviews().forEach(r => {
+    displayReviews.forEach(r => {
       if (!grouped[r.memberId]) {
-        grouped[r.memberId] = { ...r, count: 0, ratings: { leadership: 0, teamwork: 0, attendance: 0, punctuality: 0, motivation: 0, ritualWork: 0, initiative: 0, planning: 0 } };
+        const info = getMemberInfo(r.memberId);
+        grouped[r.memberId] = { memberId: r.memberId, memberName: info.name, memberTitle: info.title, count: 0, ratings: { leadership: 0, teamwork: 0, attendance: 0, punctuality: 0, motivation: 0, ritualWork: 0, initiative: 0, planning: 0 } };
       }
       Object.keys(r.ratings).forEach(k => { grouped[r.memberId].ratings[k] += r.ratings[k]; });
       grouped[r.memberId].count++;
@@ -123,21 +132,32 @@ export default function Results() {
         </div>
       </div>
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
           <div className="flex items-center gap-3">
             {auth.picture ? <img src={auth.picture} alt="Profile" className="w-10 h-10 rounded-full border-2" style={{ borderColor: AZ_GOLD }} /> : <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg" style={{ background: AZ_GOLD, color: AZ_BLUE }}>{auth.name?.[0]}</div>}
             <div><p className="font-semibold text-lg" style={{ color: AZ_BLUE }}>{auth.name}</p><p className="text-sm" style={{ color: AZ_COPPER }}>{auth.email}</p></div>
           </div>
-          <div className="flex gap-3">
-            {isDad && !viewAsSMC && <label className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: "white", border: `2px solid ${AZ_BLUE}` }}><input type="checkbox" checked={viewAsSMC} onChange={e => setViewAsSMC(e.target.checked)} className="w-4 h-4" /><span style={{ color: AZ_BLUE }}>View as SMC</span></label>}
+          <div className="flex gap-3 items-center flex-wrap">
+            {isDad && (
+              <label className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: "white", border: `2px solid ${AZ_BLUE}` }}>
+                <input type="checkbox" checked={viewAsSMC} onChange={e => setViewAsSMC(e.target.checked)} className="w-4 h-4" />
+                <span style={{ color: AZ_BLUE }}>View as SMC</span>
+              </label>
+            )}
             {isDad && <button onClick={exportCSV} className="px-4 py-2 rounded-lg font-semibold text-white flex items-center gap-2" style={{ background: AZ_BLUE }}><FileDown className="w-4 h-4" />Export CSV</button>}
             <button onClick={handleLogout} className="px-4 py-2 rounded-lg font-semibold text-white" style={{ background: AZ_RED }}>Logout</button>
           </div>
         </div>
 
-        {isDad && !viewAsSMC && (
+        {averages.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center shadow-lg">
+            <p className="text-lg" style={{ color: AZ_COPPER }}>No reviews found for your account.</p>
+          </div>
+        ) : (
           <>
-            <h2 className="text-xl font-semibold mb-4" style={{ color: AZ_BLUE }}>Average Ratings by Member (Dad Accounts Only)</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: AZ_BLUE }}>
+              {isDad && !viewAsSMC ? "Average Ratings by Member (Dad Accounts Only)" : "Average Ratings by Member (All Reviews)"}
+            </h2>
             <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -174,54 +194,6 @@ export default function Results() {
                 </table>
               </div>
             </div>
-          </>
-        )}
-
-        {(!isDad || viewAsSMC) && (
-          <>
-            <h2 className="text-xl font-semibold mb-4" style={{ color: AZ_BLUE }}>Your Reviews About Members</h2>
-            {averages.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center shadow-lg">
-                <p className="text-lg" style={{ color: AZ_COPPER }}>No reviews found for your account.</p>
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr style={{ background: AZ_BLUE, color: "white" }}>
-                        <th className="px-4 py-3 text-left">Member</th>
-                        <th className="px-4 py-3 text-left">Title</th>
-                        <th className="px-4 py-3 text-center">Ldr</th>
-                        <th className="px-4 py-3 text-center">TW</th>
-                        <th className="px-4 py-3 text-center">Att</th>
-                        <th className="px-4 py-3 text-center">Punc</th>
-                        <th className="px-4 py-3 text-center">Mot</th>
-                        <th className="px-4 py-3 text-center">RW</th>
-                        <th className="px-4 py-3 text-center">Init</th>
-                        <th className="px-4 py-3 text-center">Plan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {averages.map((m: any, i: number) => (
-                        <tr key={m.memberId} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                          <td className="px-4 py-3 font-semibold" style={{ color: AZ_BLUE }}>{m.memberName}</td>
-                          <td className="px-4 py-3 text-sm" style={{ color: AZ_COPPER }}>{m.memberTitle}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.leadership}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.teamwork}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.attendance}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.punctuality}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.motivation}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.ritualWork}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.initiative}</td>
-                          <td className="px-4 py-3 text-center font-bold text-slate-900">{m.ratings.planning}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
           </>
         )}
       </main>
