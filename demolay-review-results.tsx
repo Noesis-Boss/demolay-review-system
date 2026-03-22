@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, FileDown, Users, Eye } from "lucide-react";
+import { ArrowLeft, Users, Eye } from "lucide-react";
 
 const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
@@ -59,50 +59,122 @@ export default function Results() {
 
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
 
+  // Calculate averages per member
+  const calculateAverages = () => {
+    const memberScores = {};
+    
+    reviews.forEach(r => {
+      if (!memberScores[r.memberId]) {
+        memberScores[r.memberId] = {
+          leadership: [], teamwork: [], attendance: [], punctuality: [],
+          motivation: [], ritualWork: [], initiative: [], planning: [],
+          count: 0
+        };
+      }
+      memberScores[r.memberId].leadership.push(r.ratings.leadership);
+      memberScores[r.memberId].teamwork.push(r.ratings.teamwork);
+      memberScores[r.memberId].attendance.push(r.ratings.attendance);
+      memberScores[r.memberId].punctuality.push(r.ratings.punctuality);
+      memberScores[r.memberId].motivation.push(r.ratings.motivation);
+      memberScores[r.memberId].ritualWork.push(r.ratings.ritualWork);
+      memberScores[r.memberId].initiative.push(r.ratings.initiative);
+      memberScores[r.memberId].planning.push(r.ratings.planning);
+      memberScores[r.memberId].count++;
+    });
+
+    // Calculate averages
+    const averaged = [];
+    for (const [memberId, scores] of Object.entries(memberScores)) {
+      const avg = arr => (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
+      averaged.push({
+        memberId,
+        memberName: members.find(m => m.id === memberId)?.name || memberId,
+        leadership: avg(scores.leadership),
+        teamwork: avg(scores.teamwork),
+        attendance: avg(scores.attendance),
+        punctuality: avg(scores.punctuality),
+        motivation: avg(scores.motivation),
+        ritualWork: avg(scores.ritualWork),
+        initiative: avg(scores.initiative),
+        planning: avg(scores.planning),
+        reviewCount: scores.count
+      });
+    }
+    
+    // Sort by member name
+    return averaged.sort((a, b) => a.memberName.localeCompare(b.memberName));
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full" /></div>;
 
   const userEmail = auth?.email?.toLowerCase() || "";
   const isDad = DAD_EMAILS.includes(userEmail);
   const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
 
-  const displayReviews = isDad && !viewAsYouth ? reviews : selfMember ? reviews.filter(r => r.memberId === selfMember.id) : [];
+  const averagedReviews = calculateAverages();
+  
+  // Filter for youth view
+  const displayReviews = isDad && !viewAsYouth 
+    ? averagedReviews 
+    : selfMember 
+      ? averagedReviews.filter(r => r.memberId === selfMember.id) 
+      : [];
 
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}>
       <div style={{ background: `linear-gradient(135deg, ${AZ_BLUE}, ${AZ_RED})` }} className="py-6">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
           <Link to="/demolay-review" className="flex items-center gap-2 text-white hover:opacity-90"><ArrowLeft className="w-5 h-5" />Back</Link>
-          <h1 className="text-2xl font-bold text-white">Review Results</h1>
+          <h1 className="text-2xl font-bold text-white">Review Results - Average Scores</h1>
           <button onClick={handleLogout} className="text-white hover:opacity-90 font-semibold">Logout</button>
         </div>
       </div>
       <main className="max-w-6xl mx-auto px-4 py-8">
         {isDad && (
           <div className="flex gap-2 mb-4">
-            <button onClick={() => setViewAsYouth(false)} className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${!viewAsYouth ? "text-white bg-blue-900" : "text-blue-900 bg-gray-200"}`}><Users className="w-4 h-4" />All</button>
-            <button onClick={() => setViewAsYouth(true)} className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${viewAsYouth ? "text-white bg-blue-900" : "text-blue-900 bg-gray-200"}`}><Eye className="w-4 h-4" />View as SMC</button>
+            <button onClick={() => setViewAsYouth(false)} className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${!viewAsYouth ? "text-white bg-blue-900" : "text-blue-900 bg-gray-200"}`}><Users className="w-4 h-4" />All Members</button>
+            <button onClick={() => setViewAsYouth(true)} className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${viewAsYouth ? "text-white bg-blue-900" : "text-blue-900 bg-gray-200"}`}><Eye className="w-4 h-4" />View as Youth</button>
           </div>
         )}
+        
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <table className="w-full">
-            <thead><tr className="bg-blue-900 text-white"><th className="px-4 py-3 text-left">Member</th><th className="px-4 py-3 text-center">Leadership</th><th className="px-4 py-3 text-center">Teamwork</th><th className="px-4 py-3 text-center">Attendance</th><th className="px-4 py-3 text-center">Punctuality</th><th className="px-4 py-3 text-center">Motivation</th><th className="px-4 py-3 text-center">Ritual</th><th className="px-4 py-3 text-center">Initiative</th><th className="px-4 py-3 text-center">Planning</th></tr></thead>
+            <thead>
+              <tr className="bg-blue-900 text-white">
+                <th className="px-4 py-3 text-left">Member</th>
+                <th className="px-4 py-3 text-center">Ldr</th>
+                <th className="px-4 py-3 text-center">Team</th>
+                <th className="px-4 py-3 text-center">Att</th>
+                <th className="px-4 py-3 text-center">Punc</th>
+                <th className="px-4 py-3 text-center">Mot</th>
+                <th className="px-4 py-3 text-center">Rit</th>
+                <th className="px-4 py-3 text-center">Init</th>
+                <th className="px-4 py-3 text-center">Plan</th>
+                <th className="px-4 py-3 text-center">Reviews</th>
+              </tr>
+            </thead>
             <tbody>
               {displayReviews.map((r, i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{members.find(m => m.id === r.memberId)?.name || r.memberId}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.leadership}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.teamwork}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.attendance}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.punctuality}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.motivation}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.ritualWork}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.initiative}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ratings.planning}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-900">{r.memberName}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.leadership}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.teamwork}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.attendance}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.punctuality}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.motivation}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ritualWork}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.initiative}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.planning}</td>
+                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.reviewCount}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        
+        <p className="mt-4 text-sm text-gray-600">
+          <strong>Ldr</strong>=Leadership <strong>Team</strong>=Teamwork <strong>Att</strong>=Attendance <strong>Punc</strong>=Punctuality <strong>Mot</strong>=Motivation <strong>Rit</strong>=Ritual Work <strong>Init</strong>=Initiative <strong>Plan</strong>=Planning
+        </p>
       </main>
     </div>
   );
