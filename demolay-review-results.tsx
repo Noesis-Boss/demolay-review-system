@@ -59,10 +59,8 @@ export default function Results() {
 
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
 
-  // Calculate averages per member
   const calculateAverages = () => {
     const memberScores = {};
-    
     reviews.forEach(r => {
       if (!memberScores[r.memberId]) {
         memberScores[r.memberId] = {
@@ -82,7 +80,6 @@ export default function Results() {
       memberScores[r.memberId].count++;
     });
 
-    // Calculate averages
     const averaged = [];
     for (const [memberId, scores] of Object.entries(memberScores)) {
       const avg = arr => (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
@@ -100,28 +97,20 @@ export default function Results() {
         reviewCount: scores.count
       });
     }
-    
-    // Sort by member name
     return averaged.sort((a, b) => a.memberName.localeCompare(b.memberName));
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#dbeafe" }}><div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full" /></div>;
 
   const userEmail = auth?.email?.toLowerCase() || "";
   const isDad = DAD_EMAILS.includes(userEmail);
   const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
 
   const averagedReviews = calculateAverages();
-  
-  // Filter for youth view
-  const displayReviews = isDad && !viewAsYouth 
-    ? averagedReviews 
-    : selfMember 
-      ? averagedReviews.filter(r => r.memberId === selfMember.id) 
-      : [];
+  const displayReviews = isDad && !viewAsYouth ? averagedReviews : selfMember ? averagedReviews.filter(r => r.memberId === selfMember.id) : [];
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#dbeafe" }}>
       <div style={{ background: `linear-gradient(135deg, ${AZ_BLUE}, ${AZ_RED})` }} className="py-6">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
           <Link to="/demolay-review" className="flex items-center gap-2 text-white hover:opacity-90"><ArrowLeft className="w-5 h-5" />Back</Link>
@@ -136,7 +125,6 @@ export default function Results() {
             <button onClick={() => setViewAsYouth(true)} className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${viewAsYouth ? "text-white bg-blue-900" : "text-blue-900 bg-gray-200"}`}><Eye className="w-4 h-4" />View as Youth</button>
           </div>
         )}
-        
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <table className="w-full">
             <thead>
@@ -171,7 +159,6 @@ export default function Results() {
             </tbody>
           </table>
         </div>
-        
         <p className="mt-4 text-sm text-gray-600">
           <strong>Ldr</strong>=Leadership <strong>Team</strong>=Teamwork <strong>Att</strong>=Attendance <strong>Punc</strong>=Punctuality <strong>Mot</strong>=Motivation <strong>Rit</strong>=Ritual Work <strong>Init</strong>=Initiative <strong>Plan</strong>=Planning
         </p>

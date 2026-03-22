@@ -59,7 +59,6 @@ export default function ReviewForm() {
         } else {
           const checkRes = await fetch(`/api/reviews/submit?memberId=${memberId}`, { headers: { "X-Review-Token": token } });
           const checkData = await checkRes.json();
-          // API returns 'reviewed' not 'alreadyReviewed'
           if (checkData.reviewed) {
             setAlreadyReviewed(true);
             setRatings(checkData.review?.ratings || {});
@@ -103,7 +102,7 @@ export default function ReviewForm() {
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
 
   if (!memberId) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#dbeafe" }}>
       <div className="text-center">
         <p className="text-xl mb-4" style={{ color: AZ_BLUE }}>No member selected</p>
         <Link to="/demolay-review" className="px-4 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
@@ -111,10 +110,10 @@ export default function ReviewForm() {
     </div>
   );
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}><div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#dbeafe" }}><div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full" /></div>;
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20, ${AZ_RED}20, ${AZ_GOLD}15)` }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#dbeafe" }}>
       <div style={{ background: `linear-gradient(135deg, ${AZ_BLUE}, ${AZ_RED})` }} className="py-6">
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
           <Link to="/demolay-review" className="flex items-center gap-2 text-white hover:opacity-90"><ArrowLeft className="w-5 h-5" />Back</Link>
