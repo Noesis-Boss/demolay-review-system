@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, ArrowLeft, CheckCircle } from "lucide-react";
 
-// Arizona Flag Colors
 const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
 const AZ_GOLD = "#FFD700";
