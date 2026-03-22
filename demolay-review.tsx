@@ -7,9 +7,10 @@ const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
 const AZ_GOLD = "#FFD700";
 const AZ_COPPER = "#C47A6B";
+const LIGHT_BLUE_BG = "linear-gradient(180deg, #e6f0ff 0%, #cce5ff 50%, #b3d9ff 100%)";
 
 const members = [
-  { id: "steve-johnston", name: "Dad Steve Johnston", title: "Executive Officer", email: "executive.officer@azdemolay.org" },
+  { id: "steve-johnston", name: "Dad Steve Johnston", title: "Executive Officer", email: "state.officer.director@azdemolay.org" },
   { id: "don-lowery", name: "Dad Don Lowery", title: "State Dad", email: "state.dad@azdemolay.org" },
   { id: "bill-enloe", name: "Dad Bill Enloe", title: "State Membership Advisor", email: "membership.advisor@azdemolay.org" },
   { id: "seth-baldwin", name: "SMC Seth Baldwin", title: "State Master Councilor", email: "smc@azdemolay.org" },
@@ -22,19 +23,14 @@ const members = [
 export default function Landing() {
   const [auth, setAuth] = useState<any>(null);
   const [reviewedMembers, setReviewedMembers] = useState<string[]>([]);
-  const [isSelfReview, setIsSelfReview] = useState<string | null>(null);
+  const [selfReviewId, setSelfReviewId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  useEffect(() => { checkAuth(); }, []);
 
   const checkAuth = async () => {
     const token = localStorage.getItem("reviewToken");
-    if (!token) {
-      window.location.href = "/api/auth/google";
-      return;
-    }
+    if (!token) { window.location.href = "/api/auth/google"; return; }
     try {
       const res = await fetch("/api/auth/me", { headers: { "X-Review-Token": token } });
       const data = await res.json();
@@ -42,7 +38,10 @@ export default function Landing() {
         setAuth(data);
         const userEmail = (data.email || "").toLowerCase();
         const selfMember = members.find(m => (m.email || "").toLowerCase() === userEmail);
-        if (selfMember) setIsSelfReview(selfMember.id);
+        if (selfMember) {
+          setSelfReviewId(selfMember.id);
+          console.log("Self-review blocked for:", selfMember.name, userEmail);
+        }
         checkReviewed(token);
       } else {
         localStorage.removeItem("reviewToken");
@@ -65,17 +64,17 @@ export default function Landing() {
 
   const handleLogout = () => {
     localStorage.removeItem("reviewToken");
-    window.location.href = "/api/auth/google";
+    window.location.href = "https://accounts.google.com/logout";
   };
 
   if (!auth || loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20 0%, ${AZ_RED}20 50%, ${AZ_GOLD}15 100%)` }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: LIGHT_BLUE_BG }}>
       <div className="text-center"><div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: AZ_GOLD, borderTopColor: "transparent" }} /><p style={{ color: AZ_BLUE }}>Loading...</p></div>
     </div>
   );
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${AZ_BLUE}20 0%, ${AZ_RED}20 50%, ${AZ_GOLD}15 100%)` }}>
+    <div className="min-h-screen" style={{ background: LIGHT_BLUE_BG }}>
       <div className="py-6" style={{ background: `linear-gradient(135deg, ${AZ_BLUE} 0%, ${AZ_RED} 100%)` }}>
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-center text-white" style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.5)" }}>Arizona DeMolay 360° Review</h1>
@@ -90,26 +89,26 @@ export default function Landing() {
           </div>
           <button onClick={handleLogout} className="px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90" style={{ background: AZ_RED }}>Logout</button>
         </div>
+        
+        <div className="mb-6 p-4 rounded-lg text-center" style={{ background: "white", border: `2px solid ${AZ_BLUE}` }}>
+          <Link to="/demolay-review/results" className="inline-block px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90" style={{ background: AZ_BLUE }}>View All Results</Link>
+        </div>
+
         <p className="text-center mb-8 text-lg" style={{ color: AZ_BLUE }}>Select a member to review their performance</p>
-        {reviewedMembers.length === members.length && (
-          <div className="mb-8 p-6 rounded-xl text-center" style={{ background: `${AZ_GOLD}30`, border: `2px solid ${AZ_GOLD}` }}>
-            <p className="text-xl font-semibold mb-2" style={{ color: AZ_BLUE }}>All Reviews Complete!</p>
-            <p className="mb-4" style={{ color: AZ_COPPER }}>Thank you for completing all 8 reviews.</p>
-            <Link to="/demolay-review/results" className="inline-block px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90" style={{ background: AZ_BLUE }}>View All Results</Link>
-          </div>
-        )}
-        {isSelfReview && (
+
+        {selfReviewId && (
           <div className="mb-6 p-4 rounded-lg" style={{ background: `${AZ_RED}20`, borderLeft: `4px solid ${AZ_RED}` }}>
-            <p className="font-semibold" style={{ color: AZ_RED }}>Your self-review is disabled</p>
+            <p className="font-semibold" style={{ color: AZ_RED }}>⚠️ Self-review is disabled</p>
             <p className="text-sm" style={{ color: AZ_COPPER }}>You cannot review yourself. Your review data will be shown in the results.</p>
           </div>
         )}
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {members.map((member) => {
-            const isSelf = member.id === isSelfReview;
+            const isSelf = member.id === selfReviewId;
             const isReviewed = reviewedMembers.includes(member.id);
             if (isSelf) return (
-              <div key={member.id} className="rounded-xl p-4 opacity-70" style={{ background: "#e5e5e5", border: "2px dashed #999" }}>
+              <div key={member.id} className="rounded-xl p-4 opacity-60 cursor-not-allowed" style={{ background: "#f0f0f0", border: "2px dashed #999" }}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#ccc" }}><Lock className="w-6 h-6" style={{ color: "#666" }} /></div>
                   {isReviewed && <div className="p-1 rounded-full bg-green-500"><CheckCircle2 className="w-5 h-5 text-white" /></div>}
