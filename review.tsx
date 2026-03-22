@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Star, ArrowLeft, CheckCircle, Lock, Eye } from "lucide-react";
 
 const AZ_BLUE = "#002868";
@@ -29,8 +29,7 @@ const attributes = [
 ];
 
 export default function ReviewForm() {
-  const [searchParams] = useSearchParams();
-  const memberId = searchParams.get("member");
+  const { memberId } = useParams();
   const [auth, setAuth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState({});
@@ -101,10 +100,10 @@ export default function ReviewForm() {
 
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
 
-  if (!memberId) return (
+  if (!member) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#dbeafe" }}>
       <div className="text-center">
-        <p className="text-xl mb-4" style={{ color: AZ_BLUE }}>No member selected</p>
+        <p className="text-xl mb-4" style={{ color: AZ_BLUE }}>Member not found</p>
         <Link to="/demolay-review" className="px-4 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
       </div>
     </div>
@@ -188,7 +187,7 @@ export default function ReviewForm() {
             </div>
             <div className="bg-white rounded-xl p-6 mt-6 shadow-lg">
               <h3 className="font-semibold text-lg mb-4" style={{ color: AZ_BLUE }}>Additional Comments</h3>
-              <textarea value={comments} onChange={(e) => setComments(e.target.value)} className="w-full p-4 border-2 rounded-lg" rows={4} placeholder="Enter any additional feedback..." style={{ borderColor: AZ_GOLD }} />
+              <textarea value={comments} onChange={(e) => setComments(e.target.value)} className="w-full p-4 border-2 rounded-lg text-slate-900" rows={4} placeholder="Enter any additional feedback..." style={{ borderColor: AZ_GOLD }} />
             </div>
             <div className="flex gap-4 mt-8">
               <Link to="/demolay-review" className="flex-1 py-3 rounded-lg font-semibold border-2 text-center" style={{ borderColor: AZ_BLUE, color: AZ_BLUE }}>Cancel</Link>

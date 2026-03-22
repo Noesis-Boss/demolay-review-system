@@ -125,7 +125,7 @@ export default function Landing() {
             );
 
             return (
-              <Link key={member.id} to={`/review?member=${member.id}`} className="rounded-xl p-4 bg-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
+              <Link key={member.id} to={`/review/${member.id}`} className="rounded-xl p-4 bg-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold bg-yellow-400 text-blue-900">{member.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</div>
                   <span className="px-2 py-1 rounded text-xs font-semibold bg-yellow-400 text-blue-900">PENDING</span>
