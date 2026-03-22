@@ -1,47 +1,59 @@
 # Arizona DeMolay 360° Review System
 
-A comprehensive peer review system for the Arizona DeMolay State Association.
+A comprehensive 360-degree feedback system for evaluating members of the Arizona DeMolay State Association.
 
 ## Features
 
-- **Google OAuth Authentication** - Secure login with @azdemolay.org domain restriction
-- **Self-Review Prevention** - Members cannot review themselves
+- **Google OAuth Authentication** - Secure login via Google accounts
+- **Self-Review Prevention** - Users cannot review themselves (based on email matching)
+- **Multi-Attribute Evaluation** - 8 Likert-scale attributes:
+  - Leadership
+  - Teamwork
+  - Attendance
+  - Punctuality
+  - Motivation
+  - Ritual Work
+  - Initiative
+  - Planning
 - **Role-Based Views**:
-  - **Dad Accounts**: See all reviews and export data
-  - **Youth Officers**: See only reviews about themselves
-- **Test Mode**: Dad accounts can simulate youth officer view
-- **Real-time Tracking**: Visual indicators show completed reviews
+  - Dad accounts see all reviews + individual submissions + CSV export
+  - Youth Officer accounts see combined averages for each member
+- **Email-to-Member Mapping**:
+  - executive.officer@azdemolay.org = Dad Steve Johnston (Executive Officer)
+  - state.dad@azdemolay.org = Dad Don Lowery (State Dad)
+  - membership.advisor@azdemolay.org = Dad Bill Enloe (State Membership Advisor)
+  - smc@azdemolay.org = SMC Seth Baldwin (State Master Councilor)
+  - dsmc@azdemolay.org = DSMC Kaden Hartley (Deputy State Master Councilor)
+  - ssc@azdemolay.org = SSC Cooper Pitman (State Senior Councilor)
+  - sjc@azdemolay.org = SJC John Enloe (State Junior Councilor)
+  - scribe@azdemolay.org = Scribe James Hendrickson (State Scribe)
 
-## Technology Stack
+## Arizona Flag Colors
 
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Hono API routes
-- **Auth**: Google OAuth 2.0
-- **Storage**: File-based JSON persistence
+- **Blue**: #002868 (Old Glory Blue)
+- **Red**: #BF0A30 (Old Glory Red)
+- **Gold**: #FFD700 (Arizona Yellow)
+- **Copper**: #C47A6B (Arizona Copper)
 
-## Routes
+## URLs
 
-| Route | Description |
-|-------|-------------|
-| `/demolay-review` | Landing page - member selection |
-| `/review/:memberId` | Individual review form |
-| `/demolay-review/results` | Results dashboard |
-| `/api/auth/*` | Authentication endpoints |
-| `/api/reviews/*` | Review data API |
+- Landing/Members Page: https://jaknyfe.zo.space/demolay-review
+- Review Form: https://jaknyfe.zo.space/review/{memberId}
+- Results Page: https://jaknyfe.zo.space/demolay-review/results
 
-## Members
+## Tech Stack
 
-| Name | Title | Email |
-|------|-------|-------|
-| Dad Steve Johnston | Executive Officer | executive.officer@azdemolay.org |
-| Dad Don Lowery | State Dad | state.dad@azdemolay.org |
-| Dad Bill Enloe | State Membership Advisor | membership.advisor@azdemolay.org |
-| SMC Seth Baldwin | State Master Councilor | smc@azdemolay.org |
-| DSMC Kaden Hartley | Deputy State Master Councilor | dsmc@azdemolay.org |
-| SSC Cooper Pitman | State Senior Councilor | ssc@azdemolay.org |
-| SJC John Enloe | State Junior Councilor | sjc@azdemolay.org |
-| Scribe James Hendrickson | State Scribe | scribe@azdemolay.org |
+- Zo Space (React + TypeScript)
+- Google OAuth for authentication
+- Local JSON file storage for reviews
 
-## Development
+## File Structure
 
-All changes are tracked in this GitHub repository for version control and audit purposes.
+```
+├── demolay-review.tsx          # Landing page with member listing
+├── review-:memberId.tsx        # Individual member review form
+├── demolay-review-results.tsx  # Results page (Dad vs Youth Officer views)
+├── api-auth-*.ts              # Authentication API routes
+├── api-reviews-*.ts           # Review submission/export API routes
+└── README.md                   # This file
+```
