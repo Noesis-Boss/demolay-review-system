@@ -6,7 +6,7 @@ import { Star, ArrowLeft, CheckCircle } from "lucide-react";
 const AZ_BLUE = "#002868";
 const AZ_RED = "#BF0A30";
 const AZ_GOLD = "#FFD700";
-const AZ_COPPER = "#B87333";
+const AZ_COPPER = "#C47A6B";
 
 const members = [
   { id: "steve-johnston", name: "Dad Steve Johnston", title: "Executive Officer", email: "executive.officer@azdemolay.org" },
@@ -128,8 +128,7 @@ export default function ReviewForm() {
 
   const handleLogout = () => {
     localStorage.removeItem("reviewToken");
-    const googleLogoutUrl = `https://accounts.google.com/logout?continue=${encodeURIComponent("https://jaknyfe.zo.space/api/auth/google?prompt=select_account")}`;
-    window.location.href = googleLogoutUrl;
+    window.location.href = "https://accounts.google.com/logout";
   };
 
   if (!member) {
