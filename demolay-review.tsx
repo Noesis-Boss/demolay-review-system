@@ -33,15 +33,7 @@ export default function Landing() {
       const data = await res.json();
       if (data.authenticated) {
         setAuth(data);
-        const userEmail = data.email?.toLowerCase() || "";
-        const selfMember = members.find(m => m.email.toLowerCase() === userEmail);
-        // Get reviewed members
-        const checkRes = await fetch("/api/reviews/check-all", { headers: { "X-Review-Token": token } });
-        const checkData = await checkRes.json();
-        if (checkData.reviewedMembers) {
-          // Filter out self from reviewed list
-          setReviewedMembers(checkData.reviewedMembers.filter(id => id !== selfMember?.id));
-        }
+        await loadReviewedMembers(token);
       } else {
         localStorage.removeItem("reviewToken");
         window.location.href = "/api/auth/google";
@@ -51,6 +43,20 @@ export default function Landing() {
       window.location.href = "/api/auth/google";
     }
     setLoading(false);
+  };
+
+  const loadReviewedMembers = async (token) => {
+    const reviewed = [];
+    for (const member of members) {
+      try {
+        const res = await fetch(`/api/reviews/submit?memberId=${member.id}`, { headers: { "X-Review-Token": token } });
+        const data = await res.json();
+        if (data.alreadyReviewed) {
+          reviewed.push(member.id);
+        }
+      } catch {}
+    }
+    setReviewedMembers(reviewed);
   };
 
   const handleLogout = () => { localStorage.removeItem("reviewToken"); window.location.href = "https://accounts.google.com/logout"; };
@@ -130,7 +136,7 @@ export default function Landing() {
                   </div>
                   <h3 className="font-semibold text-lg" style={{ color: AZ_BLUE }}>{member.name}</h3>
                   <p className="text-sm text-gray-600">{member.title}</p>
-                  <p className="text-xs text-green-600 mt-2 font-semibold">✓ Review submitted</p>
+                  <p className="text-xs text-green-600 mt-2 font-semibold">Review submitted</p>
                 </div>
               );
             }
