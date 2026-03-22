@@ -25,6 +25,7 @@ export const apiRouteManifest: Record<string, ApiRouteManifest> = {
   "/api/reviews/submit": { file: "api-reviews-submit", public: true },
   "/api/reviews/export": { file: "api-reviews-export", public: true },
   "/api/auth/logout": { file: "api-auth-logout", public: true },
+  "/api/auth/check-email": { file: "api-auth-check-email", public: true },
 };
 
 export const apiRoutes: Record<string, ApiRouteConfig> = {};
