@@ -59,7 +59,8 @@ export default function ReviewForm() {
         } else {
           const checkRes = await fetch(`/api/reviews/submit?memberId=${memberId}`, { headers: { "X-Review-Token": token } });
           const checkData = await checkRes.json();
-          if (checkData.alreadyReviewed) {
+          // API returns 'reviewed' not 'alreadyReviewed'
+          if (checkData.reviewed) {
             setAlreadyReviewed(true);
             setRatings(checkData.review?.ratings || {});
             setComments(checkData.review?.comments || "");

@@ -50,7 +50,10 @@ export default function Landing() {
       try {
         const res = await fetch(`/api/reviews/submit?memberId=${member.id}`, { headers: { "X-Review-Token": token } });
         const data = await res.json();
-        if (data.alreadyReviewed) reviewed.push(member.id);
+        // API returns 'reviewed' not 'alreadyReviewed'
+        if (data.reviewed) {
+          reviewed.push(member.id);
+        }
       } catch {}
     }
     setReviewedMembers(reviewed);
