@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Star, ArrowLeft, CheckCircle, Lock, Eye } from "lucide-react";
 
 const AZ_BLUE = "#002868";
@@ -30,7 +30,6 @@ const attributes = [
 
 export default function ReviewForm() {
   const { memberId } = useParams();
-  const navigate = useNavigate();
   const [auth, setAuth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState({});
@@ -39,7 +38,6 @@ export default function ReviewForm() {
   const [submitted, setSubmitted] = useState(false);
   const [isSelf, setIsSelf] = useState(false);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
-  const [reviewData, setReviewData] = useState(null);
 
   const member = members.find(m => m.id === memberId);
 
@@ -58,12 +56,12 @@ export default function ReviewForm() {
         if (selfMember && selfMember.id === memberId) {
           setIsSelf(true);
         } else {
-          // Check if already reviewed
           const checkRes = await fetch(`/api/reviews/submit?memberId=${memberId}`, { headers: { "X-Review-Token": token } });
           const checkData = await checkRes.json();
           if (checkData.alreadyReviewed) {
             setAlreadyReviewed(true);
-            setReviewData(checkData.review);
+            setRatings(checkData.review?.ratings || {});
+            setComments(checkData.review?.comments || "");
           }
         }
       } else {
@@ -78,12 +76,12 @@ export default function ReviewForm() {
   };
 
   const handleRating = (attribute, value) => {
-    if (alreadyReviewed || isSelf) return; // Prevent changes if already reviewed or self
+    if (alreadyReviewed || isSelf) return;
     setRatings(prev => ({ ...prev, [attribute]: value }));
   };
 
   const handleSubmit = async () => {
-    if (alreadyReviewed || isSelf) { alert("You cannot submit or modify this review."); return; }
+    if (alreadyReviewed || isSelf) { alert("Cannot modify submitted review"); return; }
     if (Object.keys(ratings).length < attributes.length) { alert("Please rate all attributes"); return; }
     setSubmitting(true);
     const token = localStorage.getItem("reviewToken");
@@ -94,7 +92,7 @@ export default function ReviewForm() {
         body: JSON.stringify({ memberId, ratings, comments }),
       });
       if (res.ok) setSubmitted(true);
-      else if (res.status === 409) { alert("You have already reviewed this member."); setAlreadyReviewed(true); }
+      else if (res.status === 409) { alert("Already reviewed"); setAlreadyReviewed(true); }
       else alert("Failed to submit");
     } catch { alert("Network error"); }
     setSubmitting(false);
@@ -115,47 +113,45 @@ export default function ReviewForm() {
       </div>
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl p-6 mb-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-2" style={{ color: AZ_BLUE }}>{member?.name}</h2>
-          <p className="text-lg mb-4" style={{ color: "#B87333" }}>{member?.title}</p>
+          <h2 className="text-2xl font-bold mb-2 text-blue-900">{member?.name}</h2>
+          <p className="text-lg mb-4 text-yellow-700">{member?.title}</p>
         </div>
 
         {isSelf ? (
           <div className="bg-red-100 border-l-4 border-red-500 p-6 rounded-xl">
             <div className="flex items-center gap-3 mb-4"><Lock className="w-8 h-8 text-red-500" /><h3 className="text-xl font-bold text-red-700">Self-Review Disabled</h3></div>
             <p className="text-red-600 mb-6">You cannot review yourself.</p>
-            <Link to="/demolay-review" className="inline-block px-6 py-3 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
+            <Link to="/demolay-review" className="inline-block px-6 py-3 rounded-lg text-white font-semibold bg-blue-900">Back to Members</Link>
           </div>
         ) : alreadyReviewed ? (
           <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-xl">
             <div className="flex items-center gap-3 mb-4"><CheckCircle className="w-8 h-8 text-green-500" /><h3 className="text-xl font-bold text-green-700">Already Reviewed</h3></div>
-            <p className="text-green-600 mb-4">You have already submitted a review for {member?.name}.</p>
-            {reviewData && (
-              <div className="bg-white rounded-lg p-4 mb-4">
-                <h4 className="font-semibold mb-2">Your Previous Review:</h4>
-                <div className="grid grid-cols-4 gap-2 text-sm">
-                  {attributes.map(attr => (
-                    <div key={attr.key} className="bg-gray-100 p-2 rounded text-center">
-                      <span className="block text-xs text-gray-500">{attr.label}</span>
-                      <span className="font-bold text-lg" style={{ color: AZ_BLUE }}>{reviewData.ratings?.[attr.key] || "-"}</span>
-                    </div>
-                  ))}
-                </div>
-                {reviewData.comments && <p className="mt-3 text-sm text-gray-600 italic">"{reviewData.comments}"</p>}
+            <p className="text-green-600 mb-4">You have reviewed {member?.name}.</p>
+            <div className="bg-white rounded-lg p-4 mb-4">
+              <h4 className="font-semibold mb-2">Your Review:</h4>
+              <div className="grid grid-cols-4 gap-2 text-sm">
+                {attributes.map(attr => (
+                  <div key={attr.key} className="bg-gray-100 p-2 rounded text-center">
+                    <span className="block text-xs text-gray-500">{attr.label}</span>
+                    <span className="font-bold text-lg text-blue-900">{ratings[attr.key] || "-"}</span>
+                  </div>
+                ))}
               </div>
-            )}
+              {comments && <p className="mt-3 text-sm text-gray-600 italic">"{comments}"</p>}
+            </div>
             <div className="flex gap-3">
-              <Link to="/demolay-review" className="px-6 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
-              <Link to="/demolay-review/results" className="px-6 py-2 rounded-lg text-white font-semibold flex items-center gap-2" style={{ background: "#16a34a" }}><Eye className="w-4 h-4" />View Results</Link>
+              <Link to="/demolay-review" className="px-6 py-2 rounded-lg text-white font-semibold bg-blue-900">Back to Members</Link>
+              <Link to="/demolay-review/results" className="px-6 py-2 rounded-lg text-white font-semibold flex items-center gap-2 bg-green-600"><Eye className="w-4 h-4" />View Results</Link>
             </div>
           </div>
         ) : submitted ? (
           <div className="bg-white rounded-xl p-8 text-center shadow-lg">
             <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-            <h2 className="text-2xl font-bold mb-2" style={{ color: AZ_BLUE }}>Review Submitted!</h2>
-            <p className="mb-6" style={{ color: "#B87333" }}>Thank you for reviewing {member?.name}.</p>
+            <h2 className="text-2xl font-bold mb-2 text-blue-900">Review Submitted!</h2>
+            <p className="mb-6 text-yellow-700">Thank you for reviewing {member?.name}.</p>
             <div className="flex gap-4 justify-center">
-              <Link to="/demolay-review" className="px-6 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_BLUE }}>Back to Members</Link>
-              <button onClick={handleLogout} className="px-6 py-2 rounded-lg text-white font-semibold" style={{ background: AZ_RED }}>Logout</button>
+              <Link to="/demolay-review" className="px-6 py-2 rounded-lg text-white font-semibold bg-blue-900">Back to Members</Link>
+              <button onClick={handleLogout} className="px-6 py-2 rounded-lg text-white font-semibold bg-red-700">Logout</button>
             </div>
           </div>
         ) : (
@@ -164,24 +160,24 @@ export default function ReviewForm() {
               {attributes.map((attr) => (
                 <div key={attr.key} className="bg-white rounded-xl p-6 shadow-lg">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-semibold text-lg" style={{ color: AZ_BLUE }}>{attr.label}</h3>
-                    <span className="text-2xl font-bold" style={{ color: AZ_GOLD }}>{ratings[attr.key] || "-"}/5</span>
+                    <h3 className="font-semibold text-lg text-blue-900">{attr.label}</h3>
+                    <span className="text-2xl font-bold text-yellow-500">{ratings[attr.key] || "-"}/5</span>
                   </div>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((value) => (
-                      <button key={value} onClick={() => handleRating(attr.key, value)} className={`w-12 h-12 rounded-lg font-bold transition-all ${ratings[attr.key] === value ? "text-white scale-110" : "bg-gray-100 hover:bg-gray-200"}`} style={{ background: ratings[attr.key] === value ? AZ_BLUE : undefined }}>{value}</button>
+                      <button key={value} onClick={() => handleRating(attr.key, value)} className={`w-12 h-12 rounded-lg font-bold transition-all ${ratings[attr.key] === value ? "text-white scale-110 bg-blue-900" : "bg-gray-100 hover:bg-gray-200"}`}>{value}</button>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
             <div className="bg-white rounded-xl p-6 mt-6 shadow-lg">
-              <h3 className="font-semibold text-lg mb-4" style={{ color: AZ_BLUE }}>Additional Comments</h3>
-              <textarea value={comments} onChange={(e) => setComments(e.target.value)} className="w-full p-4 border-2 rounded-lg" rows={4} placeholder="Enter any additional feedback..." style={{ borderColor: AZ_GOLD }} />
+              <h3 className="font-semibold text-lg mb-4 text-blue-900">Additional Comments</h3>
+              <textarea value={comments} onChange={(e) => setComments(e.target.value)} className="w-full p-4 border-2 rounded-lg border-yellow-400" rows={4} placeholder="Enter any additional feedback..." />
             </div>
             <div className="flex gap-4 mt-8">
-              <Link to="/demolay-review" className="flex-1 py-3 rounded-lg font-semibold border-2 text-center" style={{ borderColor: AZ_BLUE, color: AZ_BLUE }}>Cancel</Link>
-              <button onClick={handleSubmit} disabled={submitting || Object.keys(ratings).length < attributes.length} className="flex-1 py-3 rounded-lg font-semibold text-white disabled:opacity-50" style={{ background: AZ_BLUE }}>{submitting ? "Submitting..." : "Submit Review"}</button>
+              <Link to="/demolay-review" className="flex-1 py-3 rounded-lg font-semibold border-2 text-center border-blue-900 text-blue-900">Cancel</Link>
+              <button onClick={handleSubmit} disabled={submitting || Object.keys(ratings).length < attributes.length} className="flex-1 py-3 rounded-lg font-semibold text-white disabled:opacity-50 bg-blue-900">{submitting ? "Submitting..." : "Submit Review"}</button>
             </div>
           </>
         )}
