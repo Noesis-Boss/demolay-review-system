@@ -19,6 +19,20 @@ const members = [
 ];
 
 const DAD_EMAILS = ["executive.officer@azdemolay.org", "state.officer.director@azdemolay.org", "membership.advisor@azdemolay.org"];
+const YOUTH_EMAILS = ["smc@azdemolay.org", "dsmc@azdemolay.org", "ssc@azdemolay.org", "sjc@azdemolay.org", "scribe@azdemolay.org"];
+
+const getMemberInfo = (memberId: string) => {
+  const member = members.find(m => m.id === memberId);
+  return member || { name: memberId, title: "" };
+};
+
+// Helper function to get color based on score
+const getScoreColor = (score: string) => {
+  const num = parseFloat(score);
+  if (num >= 4.0) return "text-green-600 font-bold";
+  if (num >= 3.0) return "text-yellow-600 font-bold";
+  return "text-red-600 font-bold";
+};
 
 export default function Results() {
   const [auth, setAuth] = useState(null);
@@ -131,40 +145,57 @@ export default function Results() {
           </div>
         )}
         
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-blue-900 text-white">
-                <th className="px-4 py-3 text-left">Member</th>
-                <th className="px-4 py-3 text-center">Ldr</th>
-                <th className="px-4 py-3 text-center">Team</th>
-                <th className="px-4 py-3 text-center">Att</th>
-                <th className="px-4 py-3 text-center">Punc</th>
-                <th className="px-4 py-3 text-center">Mot</th>
-                <th className="px-4 py-3 text-center">Rit</th>
-                <th className="px-4 py-3 text-center">Init</th>
-                <th className="px-4 py-3 text-center">Plan</th>
-                <th className="px-4 py-3 text-center">Reviews</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayReviews.map((r, i) => (
-                <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{r.memberName}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.leadership}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.teamwork}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.attendance}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.punctuality}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.motivation}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.ritualWork}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.initiative}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.planning}</td>
-                  <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.reviewCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {averages.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center shadow-lg">
+            <p className="text-lg" style={{ color: AZ_COPPER }}>No reviews found for your account.</p>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: AZ_BLUE }}>
+              {isDad && viewAsYouth ? "Reviews About You (Youth View)" : isDad ? "Average Ratings by Member (All Reviews)" : isYouth ? `Reviews for ${selfMember?.name || "You"}` : "Average Ratings by Member"}
+            </h2>
+            {/* Color Legend */}
+            <div className="mb-4 flex gap-4 text-sm">
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500"></span> ≥4.0 Excellent</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-500"></span> ≥3.0 Adequate</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500"></span> &lt;3.0 Needs Improvement</span>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-blue-900 text-white">
+                    <th className="px-4 py-3 text-left">Member</th>
+                    <th className="px-4 py-3 text-center">Ldr</th>
+                    <th className="px-4 py-3 text-center">Team</th>
+                    <th className="px-4 py-3 text-center">Att</th>
+                    <th className="px-4 py-3 text-center">Punc</th>
+                    <th className="px-4 py-3 text-center">Mot</th>
+                    <th className="px-4 py-3 text-center">Rit</th>
+                    <th className="px-4 py-3 text-center">Init</th>
+                    <th className="px-4 py-3 text-center">Plan</th>
+                    <th className="px-4 py-3 text-center">Reviews</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayReviews.map((r, i) => (
+                    <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                      <td className="px-4 py-3 font-semibold text-slate-900">{r.memberName}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.leadership)}`}>{r.leadership}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.teamwork)}`}>{r.teamwork}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.attendance)}`}>{r.attendance}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.punctuality)}`}>{r.punctuality}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.motivation)}`}>{r.motivation}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.ritualWork)}`}>{r.ritualWork}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.initiative)}`}>{r.initiative}</td>
+                      <td className={`px-4 py-3 text-center ${getScoreColor(r.planning)}`}>{r.planning}</td>
+                      <td className="px-4 py-3 text-center text-slate-900 font-medium">{r.reviewCount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
         
         <p className="mt-4 text-sm text-gray-600">
           <strong>Ldr</strong>=Leadership <strong>Team</strong>=Teamwork <strong>Att</strong>=Attendance <strong>Punc</strong>=Punctuality <strong>Mot</strong>=Motivation <strong>Rit</strong>=Ritual Work <strong>Init</strong>=Initiative <strong>Plan</strong>=Planning
